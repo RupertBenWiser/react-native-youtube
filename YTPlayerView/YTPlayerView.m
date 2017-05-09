@@ -52,6 +52,7 @@ NSString static *const kYTPlayerCallbackOnStateChange = @"onStateChange";
 NSString static *const kYTPlayerCallbackOnPlaybackQualityChange = @"onPlaybackQualityChange";
 NSString static *const kYTPlayerCallbackOnError = @"onError";
 NSString static *const kYTPlayerCallbackOnPlayTime = @"onPlayTime";
+NSString static *const kYTPlayerCallbackOnPlaybackRateCahnge = @"onPlaybackRateChange";
 
 NSString static *const kYTPlayerCallbackOnYouTubeIframeAPIReady = @"onYouTubeIframeAPIReady";
 
@@ -268,16 +269,10 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
 
 - (NSArray *)availablePlaybackRates {
   NSString *returnValue =
-      [self stringFromEvaluatingJavaScript:@"player.getAvailablePlaybackRates();"];
+      [self stringFromEvaluatingJavaScript:@"player.getAvailablePlaybackRates().toString();"];
 
-  NSData *playbackRateData = [returnValue dataUsingEncoding:NSUTF8StringEncoding];
-  NSError *jsonDeserializationError;
-  NSArray *playbackRates = [NSJSONSerialization JSONObjectWithData:playbackRateData
-                                                           options:kNilOptions
-                                                             error:&jsonDeserializationError];
-  if (jsonDeserializationError) {
-    return nil;
-  }
+  NSArray *tmp = [returnValue componentsSeparatedByString:@","];
+  NSArray *playbackRates = [tmp valueForKey:@"floatValue"];
 
   return playbackRates;
 }
@@ -534,6 +529,10 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
     if ([self.delegate respondsToSelector:@selector(playerViewDidBecomeReady:)]) {
       [self.delegate playerViewDidBecomeReady:self];
     }
+  } else if ([action isEqual:kYTPlayerCallbackOnPlaybackRateCahnge]) {
+      float rate = [data floatValue];
+
+      [self.delegate playerView:self didChangePlaybackRate:rate];
   } else if ([action isEqual:kYTPlayerCallbackOnStateChange]) {
     if ([self.delegate respondsToSelector:@selector(playerView:didChangeToState:)]) {
       YTPlayerState state = kYTPlayerStateUnknown;
@@ -582,7 +581,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
           float time = [data floatValue];
           [self.delegate playerView:self didPlayTime:time];
       }
-      
+
   }
 }
 
@@ -600,7 +599,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
       [ytRegex firstMatchInString:url.absoluteString
                         options:0
                           range:NSMakeRange(0, [url.absoluteString length])];
-    
+
   NSRegularExpression *adRegex =
       [NSRegularExpression regularExpressionWithPattern:kYTPlayerAdUrlRegexPattern
                                                 options:NSRegularExpressionCaseInsensitive
@@ -618,7 +617,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
     [oauthRegex firstMatchInString:url.absoluteString
                            options:0
                              range:NSMakeRange(0, [url.absoluteString length])];
-    
+
   NSRegularExpression *staticProxyRegex =
     [NSRegularExpression regularExpressionWithPattern:kYTPlayerStaticProxyRegexPattern
                                               options:NSRegularExpressionCaseInsensitive
@@ -648,6 +647,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
 - (BOOL)loadWithPlayerParams:(NSDictionary *)additionalPlayerParams {
   NSDictionary *playerCallbacks = @{
         @"onReady" : @"onReady",
+        @"onPlaybackRateChange" : @"onPlaybackRateChange",
         @"onStateChange" : @"onStateChange",
         @"onPlaybackQualityChange" : @"onPlaybackQualityChange",
         @"onError" : @"onPlayerError"
@@ -666,7 +666,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   if ([playerParams objectForKey:@"playerVars"]) {
     NSMutableDictionary *playerVars = [[NSMutableDictionary alloc] init];
     [playerVars addEntriesFromDictionary:[playerParams objectForKey:@"playerVars"]];
-      
+
     if (![playerVars objectForKey:@"origin"]) {
         self.originURL = [NSURL URLWithString:@"about:blank"];
     } else {
@@ -711,11 +711,11 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   NSString *embedHTML = [NSString stringWithFormat:embedHTMLTemplate, playerVarsJsonString];
   [self.webView loadHTMLString:embedHTML baseURL: self.originURL];
   [self.webView setDelegate:self];
-  
-  //This is needed because due to iOS 10, videos do not play full screen if allowsInlineMediaPLayback is set to YES; 
+
+  //This is needed because due to iOS 10, videos do not play full screen if allowsInlineMediaPLayback is set to YES;
   BOOL shouldPlayInline = [[playerParams objectForKey: @"playerVars"] objectForKey:@"playsinline"];
   self.webView.allowsInlineMediaPlayback = shouldPlayInline;
-  
+
   self.webView.mediaPlaybackRequiresUserAction = NO;
   return YES;
 }

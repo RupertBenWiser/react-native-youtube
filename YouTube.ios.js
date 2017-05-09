@@ -24,6 +24,7 @@ let progressEvent = null;
 let errorEvent = null;
 let enterFullScreen = null;
 let exitFullScreen = null;
+let playbackRateChangeEvent = null;
 
 export default class YouTube extends Component {
   static propTypes = {
@@ -44,7 +45,9 @@ export default class YouTube extends Component {
     loop: PropTypes.bool,
     fs: PropTypes.bool,
     onFullScreenEnter: PropTypes.func,
-    onFullScreenExit: PropTypes.func
+    onFullScreenExit: PropTypes.func,
+    rate: PropTypes.number,
+    onPlaybackRateChange: PropTypes.func,
   };
 
   static defaultProps = {
@@ -73,6 +76,10 @@ export default class YouTube extends Component {
   seekTo(seconds: number){
     NativeModules.YouTubeManager.seekTo(ReactNative.findNodeHandle(this), parseInt(seconds, 10));
   }
+  getAvailablePlaybackRates() {
+    return NativeModules.YouTubeManager.getAvailablePlaybackRates(ReactNative.findNodeHandle(this));
+  }
+
   componentWillMount() {
     changeEvent = NativeAppEventEmitter.addListener(
       'youtubeVideoChangeState',
@@ -107,6 +114,10 @@ export default class YouTube extends Component {
       'youtubeVideoExitFullScreen',
       (event) => this.props.onFullScreenExit && this.props.onFullScreenExit()
     );
+    playbackRateChangeEvent = NativeAppEventEmitter.addListener(
+      'youtubePlaybackRateChange',
+      (event) => this.props.onPlaybackRateChange && this.props.onPlaybackRateChange(event)
+    );
   }
 
   componentWillUnmount() {
@@ -117,6 +128,7 @@ export default class YouTube extends Component {
     errorEvent.remove();
     enterFullScreen.remove();
     exitFullScreen.remove();
+    playbackRateChangeEvent.remove();
   }
     render() {
         var style = [styles.base, this.props.style];

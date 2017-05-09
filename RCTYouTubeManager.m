@@ -38,7 +38,8 @@ RCT_EXPORT_MODULE();
         @"youtubeVideoChangeState",
         @"youtubeVideoChangeQuality",
         @"youtubeVideoError",
-        @"youtubeProgress"
+        @"youtubeProgress",
+        @"youtubePlaybackRateChange"
      ];
 }
 
@@ -52,6 +53,7 @@ RCT_EXPORT_MODULE();
              @"exportedProps": @{
                  @"videoId": @YES,
                  @"play": @YES,
+                 @"rate": @YES,
                  @"hidden": @YES,
                  @"playsInline": @YES,
                  @"playerParams": @YES
@@ -61,6 +63,7 @@ RCT_EXPORT_MODULE();
 
 RCT_EXPORT_VIEW_PROPERTY(videoId, NSString);
 RCT_EXPORT_VIEW_PROPERTY(play, BOOL);
+RCT_EXPORT_VIEW_PROPERTY(rate, float);
 RCT_EXPORT_VIEW_PROPERTY(hidden, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(playsInline, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(playerParams, NSDictionary);
@@ -97,6 +100,22 @@ RCT_EXPORT_METHOD(pauseVideo:(nonnull NSNumber *)reactTag)
             [youtube pauseVideo];
         } else {
             RCTLogError(@"Cannot pause: %@ (tag #%@) is not RCTYouTube", youtube, reactTag);
+        }
+    }];
+}
+
+RCT_REMAP_METHOD(getAvailablePlaybackRates,
+                 getAvailablePlaybackRates:(nonnull NSNumber *)reactTag
+                 resolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject) {
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+        RCTYouTube *youtube = viewRegistry[reactTag];
+        if ([youtube isKindOfClass:[RCTYouTube class]]) {
+            resolve([youtube availablePlaybackRates]);
+        } else {
+            NSError *error = [[NSError alloc] initWithDomain:@"com.eezytutorials.iosTuts" code:200 userInfo:@{ NSLocalizedFailureReasonErrorKey:@"LocalizedFailureReason"
+                                                                                                               }];
+            reject(@"cannot_get_playback_rates", @"React Tag in not RCTYouTube", error);
         }
     }];
 }

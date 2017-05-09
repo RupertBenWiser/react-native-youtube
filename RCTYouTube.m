@@ -23,6 +23,7 @@
     BOOL _playsInline;
     NSDictionary *_playerParams;
     BOOL _isPlaying;
+    float _rate;
 
     /* Check to see if commands can
      * be sent to the player
@@ -33,7 +34,7 @@
     /* StatusBar visibility status before the player changed to fullscreen */
     BOOL _isStatusBarHidden;
     BOOL _enteredFullScreen;
-    
+
     /* Required to publish events */
     RCTEventDispatcher *_eventDispatcher;
 }
@@ -44,6 +45,7 @@
         _eventDispatcher = eventDispatcher;
         _playsInline = NO;
         _isPlaying = NO;
+        _rate = 1;
         _enteredFullScreen = NO;
 
         self.delegate = self;
@@ -119,6 +121,13 @@
     }
 }
 
+- (void)setRate:(float)rate {
+    if (_isReady) {
+        [self setPlaybackRate:rate];
+    }
+    _rate = rate;
+}
+
 - (void)setPlaysInline:(BOOL)playsInline {
     _isReady = false;
     _isPlaying = false;
@@ -166,10 +175,22 @@
     }
     _isReady = YES;
 
+    if (_rate != 1) {
+        [self setPlaybackRate:_rate];
+    }
+
     [_eventDispatcher sendAppEventWithName:@"youtubeVideoReady"
                                         body:@{
                                                @"target": self.reactTag
                                                }];
+}
+
+- (void)playerView:(YTPlayerView *)playerView didChangePlaybackRate:(float)rate {
+    [_eventDispatcher sendAppEventWithName:@"youtubePlaybackRateChange"
+                                      body:@{
+                                             @"rate": @(rate),
+                                             @"target": self.reactTag
+                                             }];
 }
 
 - (void)playerView:(YTPlayerView *)playerView didChangeToState:(YTPlayerState)state {

@@ -43,8 +43,9 @@
     YT.ready(function() {
         player = new YT.Player('player', %@);
         player.setSize(window.innerWidth, window.innerHeight);
+        
         window.location.href = 'ytplayer://onYouTubeIframeAPIReady';
-
+             
         // this will transmit playTime frequently while playng
         function getCurrentTime() {
              var state = player.getPlayerState();
@@ -53,17 +54,21 @@
                  window.location.href = 'ytplayer://onPlayTime?data=' + time;
              }
         }
-        
+
         window.setInterval(getCurrentTime, 250);
-             
+
     });
 
     function onReady(event) {
         window.location.href = 'ytplayer://onReady?data=' + event.data;
     }
+    
+    function onPlaybackRateChange(event) {
+        window.location.href = 'ytplayer://onPlaybackRateChange?data=' + event.data;
+    }
 
     function onStateChange(event) {
-        if (!error) {            
+        if (!error) {
             window.location.href = 'ytplayer://onStateChange?data=' + event.data;
         }
         else {
@@ -81,7 +86,7 @@
         }
         window.location.href = 'ytplayer://onError?data=' + event.data;
     }
-    
+
     window.onresize = function() {
         player.setSize(window.innerWidth, window.innerHeight);
     }

@@ -68,6 +68,8 @@ typedef NS_ENUM(NSInteger, YTPlayerError) {
  */
 - (void)playerViewDidBecomeReady:(YTPlayerView *)playerView;
 
+- (void)playerView:(YTPlayerView *)playerView didChangePlaybackRate:(float)rate;
+
 /**
  * Callback invoked when player state has changed, e.g. stopped or started playback.
  *
