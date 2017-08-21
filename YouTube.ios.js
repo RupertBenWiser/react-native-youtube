@@ -37,6 +37,7 @@ const parsePlayerParams = props => ({
     modestbranding: props.modestbranding === true ? 1 : undefined,
     rel: props.rel === false ? 0 : undefined,
     origin: props.origin,
+    rate: props.rate,
   },
 });
 
@@ -53,6 +54,7 @@ export default class YouTube extends React.Component {
     modestbranding: PropTypes.bool,
     rel: PropTypes.bool,
     origin: PropTypes.string,
+    rate: PropTypes.number,
     onError: PropTypes.func,
     onReady: PropTypes.func,
     onChangeState: PropTypes.func,
@@ -114,6 +116,10 @@ export default class YouTube extends React.Component {
 
   _onProgress = event => {
     if (this.props.onProgress) this.props.onProgress(event.nativeEvent);
+  };
+
+  _onChangePlaybackRate = event => {
+    if (this.props.onChangePlaybackRate) this.props.onChangePlaybackRate(event.nativeEvent);
   };
 
   seekTo(seconds) {
@@ -196,6 +202,7 @@ export default class YouTube extends React.Component {
         onChangeQuality={this._onChangeQuality}
         onChangeFullscreen={this._onChangeFullscreen}
         onProgress={this._onProgress}
+        onChangePlaybackRate={this._onChangePlaybackRate}
       />
     );
   }

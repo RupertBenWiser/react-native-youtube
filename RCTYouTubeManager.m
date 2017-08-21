@@ -26,6 +26,7 @@ RCT_EXPORT_VIEW_PROPERTY(videoIds, NSArray);
 RCT_EXPORT_VIEW_PROPERTY(playlistId, NSString);
 RCT_EXPORT_VIEW_PROPERTY(play, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(loopProp, BOOL);
+RCT_EXPORT_VIEW_PROPERTY(rate, float);
 
 RCT_EXPORT_VIEW_PROPERTY(onError, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onReady, RCTDirectEventBlock);
@@ -33,6 +34,7 @@ RCT_EXPORT_VIEW_PROPERTY(onChangeState, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onChangeQuality, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onChangeFullscreen, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onProgress, RCTDirectEventBlock);
+RCT_EXPORT_VIEW_PROPERTY(onChangePlaybackRate, RCTDirectEventBlock);
 
 RCT_EXPORT_METHOD(seekTo:(nonnull NSNumber *)reactTag seconds:(nonnull NSNumber *)seconds)
 {

@@ -15,6 +15,7 @@
 @property (nonatomic, copy) RCTDirectEventBlock onChangeQuality;
 @property (nonatomic, copy) RCTDirectEventBlock onChangeFullscreen;
 @property (nonatomic, copy) RCTDirectEventBlock onProgress;
+@property (nonatomic, copy) RCTDirectEventBlock onChangePlaybackRate;
 
 @end
 
@@ -24,6 +25,7 @@
     BOOL _isReady;
     BOOL _playOnLoad;
     BOOL _loop;
+    float _rate;
 
     /* StatusBar visibility status before the player changed to fullscreen */
     // BOOL _isStatusBarHidden;
@@ -38,6 +40,7 @@
       _playOnLoad = NO;
       _loop = NO;
       _isFullscreen = NO;
+      _rate = 1;
 
       [self addFullscreenObserver];
 
@@ -119,6 +122,14 @@
     }
 }
 
+- (void)setRate:(float)rate {
+  if (!_isReady) {
+    [self setPlaybackRate:rate];
+  } else {
+    _rate = rate;
+  }
+}
+
 - (void)setVideoId:(NSString *)videoId {
     if (videoId && _isReady) {
         if (_loop) {
@@ -170,17 +181,22 @@
 
     _isReady = YES;
 
+    if (_rate != 1) {
+        [self setPlaybackRate:_rate];
+    }
+
     if (_onReady) {
         _onReady(@{@"target": self.reactTag});
     }
 }
 
 - (void)playerView:(YTPlayerView *)playerView didChangePlaybackRate:(float)rate {
-    [_eventDispatcher sendAppEventWithName:@"youtubePlaybackRateChange"
-                                      body:@{
-                                             @"rate": @(rate),
-                                             @"target": self.reactTag
-                                             }];
+  if (_onChangePlaybackRate) {
+      _onChangePlaybackRate(@{
+        @"rate": @(rate),
+        @"target": self.reactTag
+      });
+  }
 }
 
 - (void)playerView:(YTPlayerView *)playerView didChangeToState:(YTPlayerState)state {
