@@ -587,13 +587,6 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
       [self.delegate playerView:self receivedError:error];
     }
   } else if ([action isEqualToString:kYTPlayerCallbackOnPlayTime]) {
-<<<<<<< HEAD
-      if ([self.delegate respondsToSelector:@selector(playerView:didPlayTime:)]) {
-          float time = [data floatValue];
-          [self.delegate playerView:self didPlayTime:time];
-      }
-
-=======
     if ([self.delegate respondsToSelector:@selector(playerView:didPlayTime:)]) {
       float time = [data floatValue];
       [self.delegate playerView:self didPlayTime:time];
@@ -602,7 +595,6 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
     if (self.initialLoadingView) {
       [self.initialLoadingView removeFromSuperview];
     }
->>>>>>> 8d579baf1f1b55293c38cc937a39b173d221352a
   }
 }
 
@@ -761,15 +753,7 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
   NSString *embedHTML = [NSString stringWithFormat:embedHTMLTemplate, playerVarsJsonString];
   [self.webView loadHTMLString:embedHTML baseURL: self.originURL];
   [self.webView setDelegate:self];
-<<<<<<< HEAD
-
-  //This is needed because due to iOS 10, videos do not play full screen if allowsInlineMediaPLayback is set to YES;
-  BOOL shouldPlayInline = [[playerParams objectForKey: @"playerVars"] objectForKey:@"playsinline"];
-  self.webView.allowsInlineMediaPlayback = shouldPlayInline;
-
-=======
   self.webView.allowsInlineMediaPlayback = YES;
->>>>>>> 8d579baf1f1b55293c38cc937a39b173d221352a
   self.webView.mediaPlaybackRequiresUserAction = NO;
 
   if ([self.delegate respondsToSelector:@selector(playerViewPreferredInitialLoadingView:)]) {
