@@ -55,15 +55,18 @@ NSString static *const kYTPlayerCallbackOnPlayTime = @"onPlayTime";
 NSString static *const kYTPlayerCallbackOnPlaybackRateCahnge = @"onPlaybackRateChange";
 
 NSString static *const kYTPlayerCallbackOnYouTubeIframeAPIReady = @"onYouTubeIframeAPIReady";
+NSString static *const kYTPlayerCallbackOnYouTubeIframeAPIFailedToLoad = @"onYouTubeIframeAPIFailedToLoad";
 
 NSString static *const kYTPlayerEmbedUrlRegexPattern = @"^http(s)://(www.)youtube.com/embed/(.*)$";
 NSString static *const kYTPlayerAdUrlRegexPattern = @"^http(s)://pubads.g.doubleclick.net/pagead/conversion/";
 NSString static *const kYTPlayerOAuthRegexPattern = @"^http(s)://accounts.google.com/o/oauth2/(.*)$";
 NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.googleapis.com/static/proxy.html(.*)$";
+NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googlesyndication.com/sodar/(.*).html$";
 
 @interface YTPlayerView()
 
-@property(nonatomic, strong) NSURL *originURL;
+@property (nonatomic, strong) NSURL *originURL;
+@property (nonatomic, weak) UIView *initialLoadingView;
 
 @end
 
@@ -91,7 +94,9 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   NSMutableDictionary *tempPlayerVars = [[NSMutableDictionary alloc] init];
   [tempPlayerVars setValue:@"playlist" forKey:@"listType"];
   [tempPlayerVars setValue:playlistId forKey:@"list"];
-  [tempPlayerVars addEntriesFromDictionary:playerVars];  // No-op if playerVars is null
+  if (playerVars) {
+    [tempPlayerVars addEntriesFromDictionary:playerVars];
+  }
 
   NSDictionary *playerParams = @{ @"playerVars" : tempPlayerVars };
   return [self loadWithPlayerParams:playerParams];
@@ -100,7 +105,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
 #pragma mark - Player methods
 
 - (void)playVideo {
-    [self stringFromEvaluatingJavaScript:@"player.playVideo();"];
+  [self stringFromEvaluatingJavaScript:@"player.playVideo();"];
 }
 
 - (void)pauseVideo {
@@ -116,11 +121,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   NSNumber *secondsValue = [NSNumber numberWithFloat:seekToSeconds];
   NSString *allowSeekAheadValue = [self stringForJSBoolean:allowSeekAhead];
   NSString *command = [NSString stringWithFormat:@"player.seekTo(%@, %@);", secondsValue, allowSeekAheadValue];
-    [self stringFromEvaluatingJavaScript:command];
-}
-
-- (void)clearVideo {
-  [self stringFromEvaluatingJavaScript:@"player.clearVideo();"];
+  [self stringFromEvaluatingJavaScript:command];
 }
 
 #pragma mark - Cueing methods
@@ -400,6 +401,12 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   return YES;
 }
 
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error {
+  if (self.initialLoadingView) {
+    [self.initialLoadingView removeFromSuperview];
+  }
+}
+
 /**
  * Convert a quality value from NSString to the typed enum value.
  *
@@ -526,6 +533,9 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   }
 
   if ([action isEqual:kYTPlayerCallbackOnReady]) {
+    if (self.initialLoadingView) {
+      [self.initialLoadingView removeFromSuperview];
+    }
     if ([self.delegate respondsToSelector:@selector(playerViewDidBecomeReady:)]) {
       [self.delegate playerViewDidBecomeReady:self];
     }
@@ -577,11 +587,22 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
       [self.delegate playerView:self receivedError:error];
     }
   } else if ([action isEqualToString:kYTPlayerCallbackOnPlayTime]) {
+<<<<<<< HEAD
       if ([self.delegate respondsToSelector:@selector(playerView:didPlayTime:)]) {
           float time = [data floatValue];
           [self.delegate playerView:self didPlayTime:time];
       }
 
+=======
+    if ([self.delegate respondsToSelector:@selector(playerView:didPlayTime:)]) {
+      float time = [data floatValue];
+      [self.delegate playerView:self didPlayTime:time];
+    }
+  } else if ([action isEqualToString:kYTPlayerCallbackOnYouTubeIframeAPIFailedToLoad]) {
+    if (self.initialLoadingView) {
+      [self.initialLoadingView removeFromSuperview];
+    }
+>>>>>>> 8d579baf1f1b55293c38cc937a39b173d221352a
   }
 }
 
@@ -609,6 +630,16 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
                         options:0
                           range:NSMakeRange(0, [url.absoluteString length])];
 
+  NSRegularExpression *syndicationRegex =
+      [NSRegularExpression regularExpressionWithPattern:kYTPlayerSyndicationRegexPattern
+                                                options:NSRegularExpressionCaseInsensitive
+                                                  error:&error];
+
+  NSTextCheckingResult *syndicationMatch =
+      [syndicationRegex firstMatchInString:url.absoluteString
+                                   options:0
+                                     range:NSMakeRange(0, [url.absoluteString length])];
+
   NSRegularExpression *oauthRegex =
       [NSRegularExpression regularExpressionWithPattern:kYTPlayerOAuthRegexPattern
                                               options:NSRegularExpressionCaseInsensitive
@@ -627,7 +658,7 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
                                   options:0
                                     range:NSMakeRange(0, [url.absoluteString length])];
 
-  if (ytMatch || adMatch || oauthMatch || staticProxyMatch) {
+  if (ytMatch || adMatch || oauthMatch || staticProxyMatch || syndicationMatch) {
     return YES;
   } else {
     [[UIApplication sharedApplication] openURL:url];
@@ -653,7 +684,9 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
         @"onError" : @"onPlayerError"
   };
   NSMutableDictionary *playerParams = [[NSMutableDictionary alloc] init];
-  [playerParams addEntriesFromDictionary:additionalPlayerParams];
+  if (additionalPlayerParams) {
+    [playerParams addEntriesFromDictionary:additionalPlayerParams];
+  }
   if (![playerParams objectForKey:@"height"]) {
     [playerParams setValue:@"100%" forKey:@"height"];
   }
@@ -683,8 +716,25 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   [self addSubview:self.webView];
 
   NSError *error = nil;
-  NSString *path = [[NSBundle mainBundle] pathForResource:@"YTPlayerView-iframe-player"
-                                                   ofType:@"html"];
+  NSString *path = [[NSBundle bundleForClass:[YTPlayerView class]] pathForResource:@"YTPlayerView-iframe-player"
+                                                   ofType:@"html"
+                                              inDirectory:@"Assets"];
+
+  // in case of using Swift and embedded frameworks, resources included not in main bundle,
+  // but in framework bundle
+  if (!path) {
+      path = [[[self class] frameworkBundle] pathForResource:@"YTPlayerView-iframe-player"
+                                                     ofType:@"html"
+                                                inDirectory:@"Assets"];
+  }
+
+  // React-Native's bundler can only put resources in the main bundle directory
+  if (!path) {
+      path = [[NSBundle bundleForClass:[YTPlayerView class]] pathForResource:@"YTPlayerView-iframe-player"
+                                                     ofType:@"html"
+                                                inDirectory:nil];
+  }
+
   NSString *embedHTMLTemplate =
       [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:&error];
 
@@ -711,12 +761,27 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   NSString *embedHTML = [NSString stringWithFormat:embedHTMLTemplate, playerVarsJsonString];
   [self.webView loadHTMLString:embedHTML baseURL: self.originURL];
   [self.webView setDelegate:self];
+<<<<<<< HEAD
 
   //This is needed because due to iOS 10, videos do not play full screen if allowsInlineMediaPLayback is set to YES;
   BOOL shouldPlayInline = [[playerParams objectForKey: @"playerVars"] objectForKey:@"playsinline"];
   self.webView.allowsInlineMediaPlayback = shouldPlayInline;
 
+=======
+  self.webView.allowsInlineMediaPlayback = YES;
+>>>>>>> 8d579baf1f1b55293c38cc937a39b173d221352a
   self.webView.mediaPlaybackRequiresUserAction = NO;
+
+  if ([self.delegate respondsToSelector:@selector(playerViewPreferredInitialLoadingView:)]) {
+    UIView *initialLoadingView = [self.delegate playerViewPreferredInitialLoadingView:self];
+    if (initialLoadingView) {
+      initialLoadingView.frame = self.bounds;
+      initialLoadingView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+      [self addSubview:initialLoadingView];
+      self.initialLoadingView = initialLoadingView;
+    }
+  }
+
   return YES;
 }
 
@@ -802,22 +867,42 @@ NSString static *const kYTPlayerStaticProxyRegexPattern = @"^https://content.goo
   return boolValue ? @"true" : @"false";
 }
 
-#pragma mark Exposed for Testing
+#pragma mark - Exposed for Testing
+
 - (void)setWebView:(UIWebView *)webView {
   _webView = webView;
 }
 
 - (UIWebView *)createNewWebView {
-  UIWebView *webView = [[UIWebView alloc] initWithFrame:self.bounds];
-  webView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-  webView.scrollView.scrollEnabled = NO;
-  webView.scrollView.bounces = NO;
-  return webView;
+    UIWebView *webView = [[UIWebView alloc] initWithFrame:self.bounds];
+    webView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
+    webView.scrollView.scrollEnabled = NO;
+    webView.scrollView.bounces = NO;
+
+    if ([self.delegate respondsToSelector:@selector(playerViewPreferredWebViewBackgroundColor:)]) {
+        webView.backgroundColor = [self.delegate playerViewPreferredWebViewBackgroundColor:self];
+        if (webView.backgroundColor == [UIColor clearColor]) {
+            webView.opaque = NO;
+        }
+    }
+
+    return webView;
 }
 
 - (void)removeWebView {
   [self.webView removeFromSuperview];
   self.webView = nil;
+}
+
++ (NSBundle *)frameworkBundle {
+    static NSBundle* frameworkBundle = nil;
+    static dispatch_once_t predicate;
+    dispatch_once(&predicate, ^{
+        NSString* mainBundlePath = [[NSBundle bundleForClass:[self class]] resourcePath];
+        NSString* frameworkBundlePath = [mainBundlePath stringByAppendingPathComponent:@"Assets.bundle"];
+        frameworkBundle = [NSBundle bundleWithPath:frameworkBundlePath];
+    });
+    return frameworkBundle;
 }
 
 @end
