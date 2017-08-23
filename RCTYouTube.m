@@ -122,7 +122,7 @@
     }
 }
 
-- (void)setRate:(float)rate {
+- (void)setRateProp:(float)rate {
   if (!_isReady) {
     _rate = rate;
   } else {
