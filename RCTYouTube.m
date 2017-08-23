@@ -124,9 +124,9 @@
 
 - (void)setRate:(float)rate {
   if (!_isReady) {
-    [self setPlaybackRate:rate];
-  } else {
     _rate = rate;
+  } else {
+    [self setPlaybackRate:rate];
   }
 }
 

@@ -196,6 +196,7 @@ export default class YouTube extends React.Component {
         videoIds={this.props.videoIds}
         playlistId={this.props.playlistId}
         loopProp={this.props.loop}
+        rateProp={this.props.rate}
         onError={this._onError}
         onReady={this._onReady}
         onChangeState={this._onChangeState}
