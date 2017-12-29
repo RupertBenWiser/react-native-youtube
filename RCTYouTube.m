@@ -26,6 +26,7 @@
     BOOL _playOnLoad;
     BOOL _loop;
     float _rate;
+    NSString *_quality;
 
     /* StatusBar visibility status before the player changed to fullscreen */
     // BOOL _isStatusBarHidden;
@@ -41,6 +42,7 @@
       _loop = NO;
       _isFullscreen = NO;
       _rate = 1;
+      _quality = @"default";
 
       [self addFullscreenObserver];
 
@@ -133,6 +135,14 @@
   }
 }
 
+- (void)setQualityProp:(NSString *)quality {
+    if (!_isReady) {
+        _quality = quality;
+    } else {
+        [self setPlaybackQuality:quality];
+    }
+}
+
 - (void)setVideoId:(NSString *)videoId {
     if (videoId && _isReady) {
         if (_loop) {
@@ -186,6 +196,10 @@
 
     if (_rate != 1) {
         [self setPlaybackRate:_rate];
+    }
+
+    if (![_quality isEqualToString:@"default"]) {
+        [self setPlaybackQuality:_quality];
     }
 
     if (_onReady) {

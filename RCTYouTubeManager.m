@@ -27,6 +27,7 @@ RCT_EXPORT_VIEW_PROPERTY(playlistId, NSString);
 RCT_EXPORT_VIEW_PROPERTY(play, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(loopProp, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(rateProp, float);
+RCT_EXPORT_VIEW_PROPERTY(qualityProp, NSString);
 
 RCT_EXPORT_VIEW_PROPERTY(onError, RCTDirectEventBlock);
 RCT_EXPORT_VIEW_PROPERTY(onReady, RCTDirectEventBlock);
@@ -132,6 +133,38 @@ RCT_REMAP_METHOD(getAvailablePlaybackRates,
             NSError *error = [[NSError alloc] initWithDomain:@"com.eezytutorials.iosTuts" code:200 userInfo:@{ NSLocalizedFailureReasonErrorKey:@"LocalizedFailureReason"
                                                                                                                }];
             reject(@"cannot_get_playback_rates", @"React Tag in not RCTYouTube", error);
+        }
+    }];
+}
+
+RCT_REMAP_METHOD(getAvailableQualityLevels,
+                 getAvailableQualityLevels:(nonnull NSNumber *)reactTag
+                 resolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject) {
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+        RCTYouTube *youtube = viewRegistry[reactTag];
+        if ([youtube isKindOfClass:[RCTYouTube class]]) {
+            resolve([youtube availableQualityLevels]);
+        } else {
+            NSError *error = [[NSError alloc] initWithDomain:@"com.eezytutorials.iosTuts" code:200 userInfo:@{ NSLocalizedFailureReasonErrorKey:@"LocalizedFailureReason"
+                                                                                                               }];
+            reject(@"cannot_get_quality_levels", @"React Tag in not RCTYouTube", error);
+        }
+    }];
+}
+
+RCT_REMAP_METHOD(getPlaybackQuality,
+                 getPlaybackQuality:(nonnull NSNumber *)reactTag
+                 resolver:(RCTPromiseResolveBlock)resolve
+                 rejecter:(RCTPromiseRejectBlock)reject) {
+    [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
+        RCTYouTube *youtube = viewRegistry[reactTag];
+        if ([youtube isKindOfClass:[RCTYouTube class]]) {
+            resolve([youtube playbackQuality]);
+        } else {
+            NSError *error = [[NSError alloc] initWithDomain:@"com.eezytutorials.iosTuts" code:200 userInfo:@{ NSLocalizedFailureReasonErrorKey:@"LocalizedFailureReason"
+                                                                                                               }];
+            reject(@"cannot_get_playback_quality", @"React Tag in not RCTYouTube", error);
         }
     }];
 }

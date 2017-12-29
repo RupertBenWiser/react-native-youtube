@@ -2,16 +2,16 @@
  * @providesModule YouTube
  */
 
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 import ReactNative, {
   View,
   requireNativeComponent,
   NativeModules,
   ViewPropTypes,
-} from 'react-native';
+} from "react-native";
 
-const RCTYouTube = requireNativeComponent('RCTYouTube', null);
+const RCTYouTube = requireNativeComponent("RCTYouTube", null);
 
 const parsePlayerParams = props => ({
   videoId: Array.isArray(props.videoIds) ? props.videoIds[0] : props.videoId,
@@ -38,6 +38,7 @@ const parsePlayerParams = props => ({
     rel: props.rel === false ? 0 : undefined,
     origin: props.origin,
     rate: props.rate,
+    quality: props.quality,
   },
 });
 
@@ -56,6 +57,7 @@ export default class YouTube extends React.Component {
     rel: PropTypes.bool,
     origin: PropTypes.string,
     rate: PropTypes.number,
+    quality: PropTypes.string,
     onError: PropTypes.func,
     onReady: PropTypes.func,
     onChangeState: PropTypes.func,
@@ -106,8 +108,7 @@ export default class YouTube extends React.Component {
   };
 
   _onChangeFullscreen = event => {
-    if (this.props.onChangeFullscreen)
-      this.props.onChangeFullscreen(event.nativeEvent);
+    if (this.props.onChangeFullscreen) this.props.onChangeFullscreen(event.nativeEvent);
   };
 
   _onProgress = event => {
@@ -119,10 +120,7 @@ export default class YouTube extends React.Component {
   };
 
   seekTo(seconds) {
-    NativeModules.YouTubeManager.seekTo(
-      ReactNative.findNodeHandle(this),
-      parseInt(seconds, 10),
-    );
+    NativeModules.YouTubeManager.seekTo(ReactNative.findNodeHandle(this), parseInt(seconds, 10));
   }
 
   nextVideo() {
@@ -132,46 +130,44 @@ export default class YouTube extends React.Component {
     return NativeModules.YouTubeManager.getAvailablePlaybackRates(ReactNative.findNodeHandle(this));
   }
 
+  getAvailableQualityLevels() {
+    return NativeModules.YouTubeManager.getAvailableQualityLevels(ReactNative.findNodeHandle(this));
+  }
+
+  getPlaybackQuality() {
+    return NativeModules.YouTubeManager.getPlaybackQuality(ReactNative.findNodeHandle(this));
+  }
+
   previousVideo() {
-    NativeModules.YouTubeManager.previousVideo(
-      ReactNative.findNodeHandle(this),
-    );
+    NativeModules.YouTubeManager.previousVideo(ReactNative.findNodeHandle(this));
   }
 
   playVideoAt(index) {
-    NativeModules.YouTubeManager.playVideoAt(
-      ReactNative.findNodeHandle(this),
-      parseInt(index, 10),
-    );
+    NativeModules.YouTubeManager.playVideoAt(ReactNative.findNodeHandle(this), parseInt(index, 10));
   }
 
   videosIndex() {
     // Avoid calling the native method if there is only one video loaded for sure
-    if (
-      (Array.isArray(this.props.videoIds) && !this.props.videoIds[1]) ||
-      this.props.videoId
-    ) {
+    if ((Array.isArray(this.props.videoIds) && !this.props.videoIds[1]) || this.props.videoId) {
       return Promise.resolve(0);
     }
 
     return new Promise((resolve, reject) =>
-      NativeModules.YouTubeManager
-        .videosIndex(ReactNative.findNodeHandle(this))
+      NativeModules.YouTubeManager.videosIndex(ReactNative.findNodeHandle(this))
         .then(index => resolve(index))
-        .catch(errorMessage => reject(errorMessage)),
+        .catch(errorMessage => reject(errorMessage))
     );
   }
 
   currentTime() {
     return new Promise((resolve, reject) =>
-      NativeModules.YouTubeManager
-        .currentTime(ReactNative.findNodeHandle(this))
+      NativeModules.YouTubeManager.currentTime(ReactNative.findNodeHandle(this))
         .then(currentTime => resolve(currentTime))
-        .catch(errorMessage => reject(errorMessage)),
+        .catch(errorMessage => reject(errorMessage))
     );
     playbackRateChangeEvent = NativeAppEventEmitter.addListener(
-      'youtubePlaybackRateChange',
-      (event) => this.props.onPlaybackRateChange && this.props.onPlaybackRateChange(event)
+      "youtubePlaybackRateChange",
+      event => this.props.onPlaybackRateChange && this.props.onPlaybackRateChange(event)
     );
   }
 
@@ -185,7 +181,7 @@ export default class YouTube extends React.Component {
   render() {
     return (
       <RCTYouTube
-        style={[{ overflow: 'hidden' }, this.props.style]}
+        style={[{ overflow: "hidden" }, this.props.style]}
         playerParams={this.state.playerParams}
         play={this.props.play}
         videoId={this.props.videoId}
@@ -193,6 +189,7 @@ export default class YouTube extends React.Component {
         playlistId={this.props.playlistId}
         loopProp={this.props.loop}
         rateProp={this.props.rate}
+        qualityProp={this.props.quality}
         onError={this._onError}
         onReady={this._onReady}
         onChangeState={this._onChangeState}
