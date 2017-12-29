@@ -310,18 +310,12 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
 // Playback quality
 - (YTPlaybackQuality)playbackQuality {
   NSString *qualityValue = [self stringFromEvaluatingJavaScript:@"player.getPlaybackQuality();"];
-
-  NSLog(playbackQualityForString:qualityValue);
-
   return [YTPlayerView playbackQualityForString:qualityValue];
 }
 
 - (void)setPlaybackQuality:(YTPlaybackQuality)suggestedQuality {
   NSString *qualityValue = [YTPlayerView stringForPlaybackQuality:suggestedQuality];
   NSString *command = [NSString stringWithFormat:@"player.setPlaybackQuality('%@');", qualityValue];
-
-  NSLog(command);
-
   [self stringFromEvaluatingJavaScript:command];
 }
 
@@ -382,9 +376,6 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
 - (NSArray *)availableQualityLevels {
   NSString *returnValue =
       [self stringFromEvaluatingJavaScript:@"player.getAvailableQualityLevels().toString();"];
-
-  NSLog(returnValue);
-
   if(!returnValue) return nil;
 
   NSArray *rawQualityValues = [returnValue componentsSeparatedByString:@","];
