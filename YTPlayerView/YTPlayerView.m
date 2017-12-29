@@ -858,7 +858,13 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
 }
 
 - (UIWebView *)createNewWebView {
-    UIWebView *webView = [[UIWebView alloc] initWithFrame:self.bounds];
+    CGFloat height = [UIScreen mainScreen].bounds.size.width;
+    CGFloat width = [UIScreen mainScreen].bounds.size.height;
+
+    CGRect frame = CGRectMake(0.0, 0.0, width, height);
+    UIWebView *webView = [[UIWebView alloc] initWithFrame:frame];
+    //UIWebView *webView = [[UIWebView alloc] initWithFrame:self.bounds];
+
     webView.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
     webView.scrollView.scrollEnabled = NO;
     webView.scrollView.bounces = NO;
@@ -870,6 +876,21 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
         }
     }
 
+    webView.scalesPageToFit = YES;
+    if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
+    {
+        CGSize contentSize = webView.scrollView.contentSize;
+        CGSize viewSize = self.bounds.size;
+        float scale = viewSize.width / contentSize.width;
+        webView.scrollView.minimumZoomScale = scale;
+        webView.scrollView.maximumZoomScale = scale;
+        webView.scrollView.zoomScale = scale;
+        // center webView after scaling..
+        [webView setFrame:CGRectMake(0.0, self.frame.origin.y/3, width, height)];
+    } else {
+        webView.frame = self.bounds;
+    }
+    [webView reload];
     return webView;
 }
 
