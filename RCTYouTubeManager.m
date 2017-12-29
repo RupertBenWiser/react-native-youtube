@@ -144,7 +144,7 @@ RCT_REMAP_METHOD(getAvailableQualityLevels,
     [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
         RCTYouTube *youtube = viewRegistry[reactTag];
         if ([youtube isKindOfClass:[RCTYouTube class]]) {
-            resolve([youtube availableQualityLevelsString]);
+            resolve([youtube availableQualityLevels]);
         } else {
             NSError *error = [[NSError alloc] initWithDomain:@"com.eezytutorials.iosTuts" code:200 userInfo:@{ NSLocalizedFailureReasonErrorKey:@"LocalizedFailureReason"
                                                                                                                }];
@@ -160,7 +160,7 @@ RCT_REMAP_METHOD(getPlaybackQuality,
     [self.bridge.uiManager addUIBlock:^(__unused RCTUIManager *uiManager, NSDictionary<NSNumber *, UIView *> *viewRegistry) {
         RCTYouTube *youtube = viewRegistry[reactTag];
         if ([youtube isKindOfClass:[RCTYouTube class]]) {
-            resolve([youtube playbackQualityString]);
+            resolve([youtube playbackQuality]);
         } else {
             NSError *error = [[NSError alloc] initWithDomain:@"com.eezytutorials.iosTuts" code:200 userInfo:@{ NSLocalizedFailureReasonErrorKey:@"LocalizedFailureReason"
                                                                                                                }];

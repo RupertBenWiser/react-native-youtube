@@ -68,7 +68,7 @@ typedef NS_ENUM(NSInteger, YTPlayerError) {
  */
 - (void)playerViewDidBecomeReady:(nonnull YTPlayerView *)playerView;
 
-- (void)playerView:(nonnull YTPlayerView *)playerView didChangePlaybackRate:(float)rate;
+- (void)playerView:(YTPlayerView *)playerView didChangePlaybackRate:(float)rate;
 
 /**
  * Callback invoked when player state has changed, e.g. stopped or started playback.
@@ -536,7 +536,7 @@ typedef NS_ENUM(NSInteger, YTPlayerError) {
  *
  * @return An NSArray containing available playback rates. nil if there is an error.
  */
-- (nonnull NSArray *)availablePlaybackRates;
+- (nullable NSArray *)availablePlaybackRates;
 
 #pragma mark - Setting playback behavior for playlists
 
@@ -608,8 +608,6 @@ typedef NS_ENUM(NSInteger, YTPlayerError) {
  */
 - (YTPlaybackQuality)playbackQuality;
 
-- (nonnull NSString *)playbackQualityString;
-
 /**
  * Suggests playback quality for the video. It is recommended to leave this setting to
  * |default|. This method corresponds to the JavaScript API defined here:
@@ -619,8 +617,6 @@ typedef NS_ENUM(NSInteger, YTPlayerError) {
  */
 - (void)setPlaybackQuality:(YTPlaybackQuality)suggestedQuality;
 
-- (void)setPlaybackQualityString:(NSString *)suggestedQuality;
-
 /**
  * Gets a list of the valid playback quality values, useful in conjunction with
  * YTPlayerView::setPlaybackQuality. This method corresponds to the
@@ -629,9 +625,7 @@ typedef NS_ENUM(NSInteger, YTPlayerError) {
  *
  * @return An NSArray containing available playback quality levels. Returns nil if there is an error.
  */
-- (nonnull NSArray *)availableQualityLevels;
-
-- (nonnull NSArray *)availableQualityLevelsString;
+- (nullable NSArray *)availableQualityLevels;
 
 #pragma mark - Retrieving video information
 
