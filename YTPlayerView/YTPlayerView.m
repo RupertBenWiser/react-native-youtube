@@ -877,19 +877,8 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
     }
 
     webView.scalesPageToFit = YES;
-    if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
-    {
-        CGSize contentSize = webView.scrollView.contentSize;
-        CGSize viewSize = self.bounds.size;
-        float scale = viewSize.width / contentSize.width;
-        webView.scrollView.minimumZoomScale = scale;
-        webView.scrollView.maximumZoomScale = scale;
-        webView.scrollView.zoomScale = scale;
-        // center webView after scaling..
-        [webView setFrame:CGRectMake(0.0, self.frame.origin.y/3, width, height)];
-    } else {
-        webView.frame = self.bounds;
-    }
+    webView.frame = self.bounds;
+
     [webView reload];
     return webView;
 }
