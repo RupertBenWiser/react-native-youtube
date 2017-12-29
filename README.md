@@ -46,16 +46,17 @@ Can be changed while mounted. Overridden at start by `videoId` and `videoIds`.
 * `modestbranding` (boolean, *iOS*): This parameter lets you use a YouTube player that does not show a YouTube logo. Default: `false`.
 * `origin` (string, *iOS*): This parameter provides an extra security measure for the iFrame API.
 * `rel` (boolean, *iOS*): Show related videos at the end of the video. Default: `true`.
+* `resumePlayAndroid` (boolean, *Android*): Makes the video resume playback after the app resumes from background. Default: `true`.
 
 The iOS implementation of this player uses the official YouTube iFrame under the hood, so most parameters behavior [can be further understood here.](https://developers.google.com/youtube/player_parameters)
 
 #### Events
 * `onReady`: Called once when the video player is setup.
-* `onChangeState`: Sends the current state of the player on `e.state`. Common values are `buffering`/`playing`/`paused` and more.
+* `onChangeState`: Sends the current state of the player on `e.state`. Common values are `buffering`/`playing`/`paused` and more (on Android there is also a `seeking` state that comes with the location of the playback in seconds on `e.currentTime`).
 * `onChangeQuality`: Sends the current quality of video playback on `e.quality`.
 * `onError`: Sends any errors before and during video playback on `e.error`.
 * `onChangeFullscreen`: Called when the player enters or exits the fullscreen mode on `e.isFullscreen`.
-* `onProgress` *(iOS)*: Periodically sends any time progress made on `e.currentTime` and `e.duration`.
+* `onProgress` *(iOS)*: Called every 500ms with the time progress of the playback on `e.currentTime` and also duration on `e.duration`.
 
 #### Methods
 * `seekTo(seconds)`: Seeks to a specified time in the video.
@@ -63,7 +64,7 @@ The iOS implementation of this player uses the official YouTube iFrame under the
 * `previousVideo()`: opposite of `nextVideo()`.
 * `playVideoAt(index)`: Will start playing the video at `index` (zero-based) position in a playlist (`videoIds` or `playlistId`. Not supported for `playlistId` on Android).
 * `videosIndex()`: Returns a Promise that results with the `index` (zero-based) number of the video currently played in a playlist (`videoIds` or `playlistId`. Not supported for `playlistId` on Android) or errors with an errorMessage string.
-* `currentTime()` *(Android)*: Returns a Promise that results with the `currentTime` of the played video (in seconds) or errors with an errorMessage string. Should be used as an alternative for Android to `onProgress` event on iOS.
+* `currentTime()`: Returns a Promise that results with the `currentTime` of the played video (in seconds) or errors with an errorMessage string. Should be used as an alternative for Android to `onProgress` event on iOS.
 * `duration()` *(Android)*: Returns a Promise that results with the `duration` of the played video (in seconds) or errors with an errorMessage string. Should be used as an alternative for Android to `onProgress` event on iOS.
 * `reloadIframe()` *(iOS)*: Specific props (`fullscreen`, `modestbranding`, `showinfo`, `rel`, `controls`, `origin`) can only be set at mounting and initial loading of the underlying WebView that holds the YouTube iFrame (Those are `<iframe>` parameters). If you want to change one of them during the lifecycle of the component, you should know the usability cost of loading the WebView again, and use this method right after the component received the updated prop.
 

@@ -39,6 +39,7 @@ export default class YouTube extends React.Component {
     fullscreen: PropTypes.bool,
     controls: PropTypes.oneOf([0, 1, 2]),
     showFullscreenButton: PropTypes.bool,
+    resumePlayAndroid: PropTypes.bool,
     onError: PropTypes.func,
     onReady: PropTypes.func,
     onChangeState: PropTypes.func,
@@ -49,15 +50,11 @@ export default class YouTube extends React.Component {
 
   static defaultProps = {
     showFullscreenButton: true,
+    resumePlayAndroid: true,
   };
 
   constructor(props) {
     super(props);
-    if (props.playsInline !== undefined) {
-      throw new Error(
-        'YouTube.android.js: `playsInline` prop was dropped. Please use `fullscreen`',
-      );
-    }
 
     this.state = {
       moduleMargin: StyleSheet.hairlineWidth * 2,
@@ -109,16 +106,13 @@ export default class YouTube extends React.Component {
   };
 
   _onChangeQuality = event => {
-    if (this.props.onChangeQuality)
-      this.props.onChangeQuality(event.nativeEvent);
+    if (this.props.onChangeQuality) this.props.onChangeQuality(event.nativeEvent);
   };
 
   _onChangeFullscreen = event => {
     const { isFullscreen } = event.nativeEvent;
-    if (this.state.fullscreen !== isFullscreen)
-      this.setState({ fullscreen: isFullscreen });
-    if (this.props.onChangeFullscreen)
-      this.props.onChangeFullscreen(event.nativeEvent);
+    if (this.state.fullscreen !== isFullscreen) this.setState({ fullscreen: isFullscreen });
+    if (this.props.onChangeFullscreen) this.props.onChangeFullscreen(event.nativeEvent);
   };
 
   seekTo(seconds) {
