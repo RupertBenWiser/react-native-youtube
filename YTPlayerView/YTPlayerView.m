@@ -309,20 +309,26 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
 
 // Playback quality
 - (YTPlaybackQuality)playbackQuality {
-  NSString *qualityValue = [self stringFromEvaluatingJavaScript:@"player.getPlaybackQuality();"];
-
-  NSLog(playbackQualityForString:qualityValue);
+  NSString *qualityValue = [self playbackQualityString];
 
   return [YTPlayerView playbackQualityForString:qualityValue];
 }
 
+- (NSString *)playbackQualityString {
+  NSString *qualityValue = [self stringFromEvaluatingJavaScript:@"player.getPlaybackQuality();"];
+
+  return qualityValue;
+}
+
 - (void)setPlaybackQuality:(YTPlaybackQuality)suggestedQuality {
   NSString *qualityValue = [YTPlayerView stringForPlaybackQuality:suggestedQuality];
-  NSString *command = [NSString stringWithFormat:@"player.setPlaybackQuality('%@');", qualityValue];
+  [self setPlaybackQualityString:qualityValue];
+}
 
-  NSLog(command);
+- (void)setPlaybackQualityString:(NSString *)suggestedQuality {
+    NSString *command = [NSString stringWithFormat:@"player.setPlaybackQuality('%@');", suggestedQuality];
 
-  [self stringFromEvaluatingJavaScript:command];
+    [self stringFromEvaluatingJavaScript:command];
 }
 
 #pragma mark - Video information methods
@@ -380,20 +386,21 @@ NSString static *const kYTPlayerSyndicationRegexPattern = @"^https://tpc.googles
 #pragma mark - Helper methods
 
 - (NSArray *)availableQualityLevels {
-  NSString *returnValue =
-      [self stringFromEvaluatingJavaScript:@"player.getAvailableQualityLevels().toString();"];
-
-  NSLog(returnValue);
-
-  if(!returnValue) return nil;
-
-  NSArray *rawQualityValues = [returnValue componentsSeparatedByString:@","];
+  NSArray *rawQualityValues = [self availableQualityLevelsString];
   NSMutableArray *levels = [[NSMutableArray alloc] init];
   for (NSString *rawQualityValue in rawQualityValues) {
     YTPlaybackQuality quality = [YTPlayerView playbackQualityForString:rawQualityValue];
     [levels addObject:[NSNumber numberWithInt:quality]];
   }
   return levels;
+}
+
+- (NSArray *)availableQualityLevelsString {
+  NSString *returnValue =
+      [self stringFromEvaluatingJavaScript:@"player.getAvailableQualityLevels().toString();"];
+
+  NSArray *rawQualityValues = [returnValue componentsSeparatedByString:@","];
+  return rawQualityValues;
 }
 
 - (BOOL)webView:(UIWebView *)webView

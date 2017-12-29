@@ -2,16 +2,16 @@
  * @providesModule YouTube
  */
 
-import React from "react";
-import PropTypes from "prop-types";
+import React from 'react';
+import PropTypes from 'prop-types';
 import ReactNative, {
   View,
   requireNativeComponent,
   NativeModules,
   ViewPropTypes,
-} from "react-native";
+} from 'react-native';
 
-const RCTYouTube = requireNativeComponent("RCTYouTube", null);
+const RCTYouTube = requireNativeComponent('RCTYouTube', null);
 
 const parsePlayerParams = props => ({
   videoId: Array.isArray(props.videoIds) ? props.videoIds[0] : props.videoId,
@@ -37,8 +37,6 @@ const parsePlayerParams = props => ({
     modestbranding: props.modestbranding === true ? 1 : undefined,
     rel: props.rel === false ? 0 : undefined,
     origin: props.origin,
-    rate: props.rate,
-    quality: props.quality,
   },
 });
 
@@ -82,7 +80,7 @@ export default class YouTube extends React.Component {
   shouldComponentUpdate() {
     // Prevent unnecessary renders before the native component is ready to accept them
     if (this._isReady) return true;
-    else return false;
+    return false;
   }
 
   _onError = event => {
@@ -166,7 +164,7 @@ export default class YouTube extends React.Component {
         .catch(errorMessage => reject(errorMessage))
     );
     playbackRateChangeEvent = NativeAppEventEmitter.addListener(
-      "youtubePlaybackRateChange",
+      'youtubePlaybackRateChange',
       event => this.props.onPlaybackRateChange && this.props.onPlaybackRateChange(event)
     );
   }
@@ -181,7 +179,7 @@ export default class YouTube extends React.Component {
   render() {
     return (
       <RCTYouTube
-        style={[{ overflow: "hidden" }, this.props.style]}
+        style={[{ overflow: 'hidden' }, this.props.style]}
         playerParams={this.state.playerParams}
         play={this.props.play}
         videoId={this.props.videoId}

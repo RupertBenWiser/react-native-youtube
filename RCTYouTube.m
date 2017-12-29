@@ -139,7 +139,7 @@
     if (!_isReady) {
         _quality = quality;
     } else {
-        [self setPlaybackQuality:quality];
+        [self setPlaybackQualityString:quality];
     }
 }
 
